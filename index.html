@@ -1441,6 +1441,19 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         return;
       }
 
+      try {
+        await runPromptFlow(userText, apiKey);
+      } catch (setupErr) {
+        // Safety net: surface ANY error (even ones outside the streaming try/catch below)
+        // as a visible toast instead of letting it fail silently with no reply at all.
+        console.error('sendPrompt failed before/around streaming:', setupErr);
+        showToast('Something went wrong sending your message: ' + setupErr.message, 'error');
+        isGenerating = false;
+        updateInputControlsState();
+      }
+    };
+
+    async function runPromptFlow(userText, apiKey) {
       // Hide zero-state
       zeroStateEl.style.display = 'none';
 
@@ -1641,7 +1654,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         scrollToBottom();
         if (voiceModeActive && voiceFaceWrapEl.classList.contains('voice-thinking')) setVoiceState('idle');
       }
-    };
+    }
 
     function finishReasoningUI(thinkingStatus, reasoningHeader) {
       thinkingStatus.innerHTML = `
