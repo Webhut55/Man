@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MAN — WebHut's AI Workspace</title>
+  <title>MAN — WebHut AI Workspace</title>
   
   <!-- PWA Configuration -->
   <link id="manifestLink" rel="manifest" href="./manifest.json">
@@ -96,6 +96,126 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
     }
+
+    /* Entrance animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.85) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Desktop sidebar collapse */
+    #sidebar {
+      transition: width 280ms cubic-bezier(0.4, 0, 0.2, 1), margin-left 280ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms ease, transform 280ms ease-in-out;
+    }
+    @media (min-width: 1024px) {
+      #sidebar.lg-collapsed {
+        width: 0 !important;
+        min-width: 0 !important;
+        opacity: 0;
+        pointer-events: none;
+        border-right: none;
+        overflow: hidden;
+      }
+    }
+    #sidebarToggleDesktop svg {
+      transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #sidebarToggleDesktop.is-collapsed svg {
+      transform: rotate(180deg);
+    }
+
+    /* Scroll-to-bottom FAB */
+    #scrollToBottomBtn {
+      transition: opacity 220ms ease, transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #scrollToBottomBtn.is-visible {
+      opacity: 1 !important;
+      transform: translateX(-50%) scale(1) !important;
+      pointer-events: auto !important;
+    }
+
+    /* Voice Mode face */
+    #voiceMouth {
+      transition: d 90ms ease-in-out;
+    }
+    #voiceEyeL, #voiceEyeR {
+      transition: r 150ms ease, opacity 150ms ease;
+      transform-origin: center;
+    }
+    @keyframes voiceRingPulse {
+      0% { transform: scale(0.95); opacity: 0.6; }
+      70% { transform: scale(1.25); opacity: 0; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+    @keyframes voiceBlink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+    .voice-listening #voiceRing {
+      animation: voiceRingPulse 1.6s ease-out infinite;
+    }
+    .voice-listening #voiceRing2 {
+      animation: voiceRingPulse 1.6s ease-out infinite 0.5s;
+    }
+    .voice-idle #voiceEyeL, .voice-idle #voiceEyeR {
+      animation: voiceBlink 4.5s ease-in-out infinite;
+    }
+    .voice-thinking #voiceMouth {
+      animation: none;
+    }
+
+    /* EMO-style extra properties: bobbing head, thinking tilt, blush, sleepy droop */
+    #voiceFace {
+      transition: transform 300ms ease-in-out;
+      transform-origin: 50% 60%;
+    }
+    .voice-cheek {
+      transition: opacity 300ms ease;
+    }
+    @keyframes voiceBob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-3px) rotate(0deg); }
+    }
+    .voice-listening #voiceFace {
+      animation: voiceBob 1.1s ease-in-out infinite;
+    }
+    @keyframes voiceThinkTilt {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(6deg); }
+    }
+    .voice-thinking #voiceFace {
+      animation: voiceThinkTilt 1.3s ease-in-out infinite;
+    }
+    @keyframes voiceEyeSparkle {
+      0%, 100% { opacity: 1; r: 11; }
+      50% { opacity: 0.7; r: 9; }
+    }
+    .voice-speaking #voiceEyeL, .voice-speaking #voiceEyeR {
+      animation: voiceEyeSparkle 0.5s ease-in-out infinite;
+    }
+
+    /* Mood: happy */
+    .voice-mood-happy #voiceMouth { d: path("M 86 120 Q 100 136 114 120"); }
+    .voice-mood-happy .voice-cheek { opacity: 0.8; }
+    .voice-mood-happy #voiceEyeL, .voice-mood-happy #voiceEyeR { fill: #4ade80; }
+
+    /* Mood: curious */
+    .voice-mood-curious #voiceFace { transform: rotate(-8deg); }
+    .voice-mood-curious #voiceEyeR { transform: translateY(-4px); }
+    .voice-mood-curious #voiceMouth { d: path("M 90 124 Q 100 120 110 126"); }
+
+    /* Mood: sleepy */
+    .voice-mood-sleepy #voiceEyeL, .voice-mood-sleepy #voiceEyeR { transform: scaleY(0.25); fill: #94a3b8; }
+    .voice-mood-sleepy #voiceMouth { d: path("M 92 124 Q 100 122 108 124"); }
+    .voice-mood-sleepy #voiceFace { animation: voiceBob 3s ease-in-out infinite; }
 
     /* Markdown Styling */
     .markdown-content p {
@@ -196,15 +316,15 @@
 <body class="font-sans antialiased h-screen overflow-hidden flex flex-col cyber-grid">
 
   <!-- Mobile Sidebar Overlay -->
-  <div id="sidebarOverlay" class="fixed inset-0 bg-slate-100/80 backdrop-blur-sm z-30 hidden lg:hidden transition-opacity duration-300" onclick="toggleMobileSidebar()"></div>
+  <div id="sidebarOverlay" class="fixed inset-0 bg-slate-100/80 backdrop-blur-sm z-30 lg:hidden opacity-0 pointer-events-none transition-opacity duration-300" onclick="toggleMobileSidebar()"></div>
 
   <!-- Main Container -->
-  <div class="flex h-full w-full relative overflow-hidden">
+  <div class="flex h-full w-full relative overflow-hidden animate-[fadeInScale_0.45s_cubic-bezier(0.16,1,0.3,1)]">
     
     <!-- Sidebar -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 transform -translate-x-full transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full glass-panel">
       <!-- Sidebar Brand Header -->
-      <div class="p-6 border-b border-slate-200 flex items-center justify-between bg-white/50">
+      <div class="p-6 border-b border-slate-200 flex items-center justify-between bg-white/50 animate-[fadeIn_0.35s_ease-out]" style="animation-fill-mode: backwards; animation-delay: 0.03s;">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(26,122,32,0.1)]">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-6 h-6 fill-amber-500">
@@ -225,7 +345,7 @@
       </div>
 
       <!-- New Chat + History -->
-      <div class="p-4 pb-2 border-b border-slate-200 bg-white/40 space-y-3">
+      <div class="p-4 pb-2 border-b border-slate-200 bg-white/40 space-y-3 animate-[fadeIn_0.35s_ease-out]" style="animation-fill-mode: backwards; animation-delay: 0.08s;">
         <button onclick="startNewChat()" class="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm py-2.5 px-3 rounded-lg transition-all shadow-sm active:scale-[0.98]">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -246,7 +366,7 @@
       </div>
 
       <!-- Sidebar Content (Scrollable) -->
-      <div class="flex-1 overflow-y-auto p-5 space-y-6">
+      <div class="flex-1 overflow-y-auto p-5 space-y-6 animate-[fadeIn_0.35s_ease-out]" style="animation-fill-mode: backwards; animation-delay: 0.13s;">
         
         <!-- API KEY SETTING -->
         <div class="space-y-2 bg-white/60 p-4 rounded-xl border border-slate-200/60 shadow-sm">
@@ -259,7 +379,7 @@
           <div class="relative">
             <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." 
               class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 pr-10 font-mono transition-all">
-            <button id="toggleKeyVisibility" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+            <button id="toggleKeyVisibility" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 active:scale-90 transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -328,7 +448,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       </div>
 
       <!-- Sidebar Footer -->
-      <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col gap-2">
+      <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-col gap-2 animate-[fadeIn_0.35s_ease-out]" style="animation-fill-mode: backwards; animation-delay: 0.18s;">
         <div class="grid grid-cols-2 gap-2">
           <button onclick="exportCurrentChat()" class="flex items-center justify-center gap-1.5 w-full bg-white hover:bg-amber-50 border border-slate-300 hover:border-amber-300 text-slate-600 hover:text-amber-700 font-medium text-xs py-2 px-3 rounded-lg transition-all active:scale-[0.98] shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -344,7 +464,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           </button>
         </div>
         <div class="text-[10px] text-center text-slate-400 font-mono mt-1">
-          WebHut MAN Workspace v1.2.0
+          WebHut MAN Workspace v1.3.0
         </div>
       </div>
     </aside>
@@ -353,12 +473,20 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-transparent">
       
       <!-- Top Navigation Header -->
-      <header class="h-16 border-b border-slate-200/80 flex items-center justify-between px-4 md:px-6 glass-header z-20 shrink-0 shadow-sm">
+      <header class="h-16 border-b border-slate-200/80 flex items-center justify-between px-4 md:px-6 glass-header z-20 shrink-0 shadow-sm animate-[fadeIn_0.4s_ease-out]" style="animation-fill-mode: backwards; animation-delay: 0.05s;">
         <!-- Sidebar Toggle Button (Mobile) -->
         <div class="flex items-center gap-3">
-          <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors">
+          <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-slate-100 border border-slate-200 text-slate-600 active:scale-90 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+
+          <!-- Sidebar Toggle Button (Desktop) -->
+          <button id="sidebarToggleDesktop" onclick="toggleDesktopSidebar()" title="Toggle sidebar (Ctrl+B)" class="hidden lg:flex p-2 rounded-lg hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors active:scale-95">
+            <svg class="w-4.5 h-4.5" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="16" rx="2"/>
+              <line x1="9" y1="4" x2="9" y2="20"/>
             </svg>
           </button>
           
@@ -374,8 +502,16 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
 
         <!-- Actions / In-App PWA Install Banner -->
         <div class="flex items-center gap-3">
+          <!-- Voice Mode Toggle -->
+          <button id="voiceModeBtn" onclick="openVoiceMode()" title="Voice Mode" class="flex items-center gap-1.5 bg-white hover:bg-amber-50 border border-slate-300 hover:border-amber-400 text-slate-600 hover:text-amber-700 font-bold text-xs py-1.5 px-3 rounded-lg active:scale-95 transition-all shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"/>
+            </svg>
+            <span class="hidden sm:inline">Voice</span>
+          </button>
+
           <!-- Install Button (Hidden by default, shown by beforeinstallprompt) -->
-          <button id="installBtn" class="hidden items-center gap-1.5 bg-white border border-amber-500/50 hover:bg-amber-50 text-amber-700 font-bold text-xs py-1.5 px-3 rounded-lg transition-all shadow-sm">
+          <button id="installBtn" class="hidden items-center gap-1.5 bg-white border border-amber-500/50 hover:bg-amber-50 text-amber-700 font-bold text-xs py-1.5 px-3 rounded-lg active:scale-95 transition-all shadow-sm animate-[fadeInScale_0.3s_ease-out]">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
@@ -446,8 +582,16 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         </div>
       </div>
 
+      <!-- Scroll to Bottom FAB -->
+      <button id="scrollToBottomBtn" onclick="scrollToBottom()" class="flex absolute bottom-28 left-1/2 z-20 items-center gap-1.5 bg-white hover:bg-amber-50 border border-slate-300 hover:border-amber-400 text-slate-600 hover:text-amber-700 text-xs font-semibold py-1.5 px-3.5 rounded-full shadow-lg opacity-0 scale-90 pointer-events-none" style="transform: translateX(-50%) scale(0.9);">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+        Scroll to latest
+      </button>
+
       <!-- Bottom Chat Inputs -->
-      <footer class="p-4 bg-white/80 backdrop-blur-md border-t border-slate-200 shrink-0 z-20 pb-6">
+      <footer class="p-4 bg-white/80 backdrop-blur-md border-t border-slate-200 shrink-0 z-20 pb-6 animate-[fadeIn_0.4s_ease-out]" style="animation-fill-mode: backwards; animation-delay: 0.15s;">
         <div class="max-w-4xl mx-auto space-y-2">
           
           <div class="relative flex items-end gap-3 bg-white border border-slate-300 rounded-2xl px-4 py-3 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20 transition-all shadow-sm">
@@ -459,7 +603,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             <!-- Actions container -->
             <div class="flex items-center gap-2 shrink-0 h-full pb-1">
               <!-- Stop Stream Button -->
-              <button id="stopBtn" onclick="stopGenerating()" class="hidden items-center justify-center p-2 rounded-xl bg-rose-100 text-rose-600 hover:bg-rose-200 hover:text-rose-700 transition-colors" title="Stop generating">
+              <button id="stopBtn" onclick="stopGenerating()" class="hidden items-center justify-center p-2 rounded-xl bg-rose-100 text-rose-600 hover:bg-rose-200 hover:text-rose-700 active:scale-90 transition-all" title="Stop generating">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <rect x="6" y="6" width="12" height="12" rx="2"></rect>
                 </svg>
@@ -488,8 +632,80 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
 
   </div>
 
+  <!-- Voice Mode Overlay -->
+  <div id="voiceModeOverlay" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/90 backdrop-blur-md p-6">
+    <button onclick="closeVoiceMode()" class="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <div class="flex flex-col items-center gap-8 max-w-md w-full text-center">
+
+      <!-- Face -->
+      <div class="relative w-48 h-48">
+        <div id="voiceRing" class="absolute inset-0 rounded-full border-2 border-sky-400/50"></div>
+        <div id="voiceRing2" class="absolute inset-0 rounded-full border-2 border-sky-400/25"></div>
+        <div class="absolute inset-3 rounded-full bg-gradient-to-b from-[#fafcff] to-[#e7edf5] shadow-[0_0_60px_rgba(56,189,248,0.35)] flex items-center justify-center overflow-hidden border border-slate-200">
+          <svg id="voiceFace" viewBox="0 0 200 200" class="w-36 h-36">
+            <defs>
+              <filter id="voiceGlow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Little rounded ears / antenna bumps -->
+            <circle cx="38" cy="70" r="10" fill="#dbe4ee"/>
+            <circle cx="162" cy="70" r="10" fill="#dbe4ee"/>
+
+            <!-- Screen face -->
+            <rect x="45" y="55" width="110" height="90" rx="35" fill="#0b1220"/>
+
+            <!-- Eyes: round friendly dots -->
+            <circle id="voiceEyeL" cx="80" cy="100" r="11" fill="#38bdf8" filter="url(#voiceGlow)"/>
+            <circle id="voiceEyeR" cx="120" cy="100" r="11" fill="#38bdf8" filter="url(#voiceGlow)"/>
+
+            <!-- Mouth: small curved smile line -->
+            <path id="voiceMouth" d="M 88 122 Q 100 130 112 122" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" fill="none" filter="url(#voiceGlow)"/>
+
+            <!-- Cheek glow blushes, used for the "happy" property -->
+            <circle id="voiceCheekL" class="voice-cheek" cx="58" cy="112" r="7" fill="#fb7185" opacity="0"/>
+            <circle id="voiceCheekR" class="voice-cheek" cx="142" cy="112" r="7" fill="#fb7185" opacity="0"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <p id="voiceStatusText" class="text-white font-mono font-semibold tracking-wide text-lg">Tap the mic to talk</p>
+        <p id="voiceTranscriptText" class="text-white/50 text-sm min-h-[1.5rem]"></p>
+      </div>
+
+      <!-- Mood chips: extra "properties" the little face can express -->
+      <div class="flex flex-wrap justify-center gap-2">
+        <button type="button" onclick="setVoiceMood('happy')" class="voice-mood-btn px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-all active:scale-95">😊 Happy</button>
+        <button type="button" onclick="setVoiceMood('curious')" class="voice-mood-btn px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-all active:scale-95">🤔 Curious</button>
+        <button type="button" onclick="setVoiceMood('sleepy')" class="voice-mood-btn px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-all active:scale-95">😴 Sleepy</button>
+        <button type="button" onclick="setVoiceMood('neutral')" class="voice-mood-btn px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-all active:scale-95">↺ Reset</button>
+      </div>
+
+      <!-- Mic Button -->
+      <button id="voiceMicBtn" onclick="toggleVoiceListening()" class="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg transition-all active:scale-90">
+        <svg id="voiceMicIcon" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"/>
+        </svg>
+      </button>
+
+      <p class="text-white/30 text-[11px] font-mono">Uses your browser's built-in speech recognition &amp; voice — no extra setup.</p>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
-  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-[70] flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- Application Logic -->
   <script>
@@ -512,6 +728,8 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     const toggleKeyVisibilityBtn = document.getElementById('toggleKeyVisibility');
     const sidebarEl = document.getElementById('sidebar');
     const sidebarOverlayEl = document.getElementById('sidebarOverlay');
+    const sidebarToggleDesktopEl = document.getElementById('sidebarToggleDesktop');
+    const scrollToBottomBtnEl = document.getElementById('scrollToBottomBtn');
     const systemPromptInput = document.getElementById('systemPromptInput');
     const keyStatusBadge = document.getElementById('keyStatusBadge');
     const headerStatusBadge = document.getElementById('headerStatusBadge');
@@ -521,6 +739,12 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     const chatHistoryListEl = document.getElementById('chatHistoryList');
     const historyCountBadgeEl = document.getElementById('historyCountBadge');
     const emptyHistoryMsgEl = document.getElementById('emptyHistoryMsg');
+    const voiceModeOverlayEl = document.getElementById('voiceModeOverlay');
+    const voiceStatusTextEl = document.getElementById('voiceStatusText');
+    const voiceTranscriptTextEl = document.getElementById('voiceTranscriptText');
+    const voiceMicBtnEl = document.getElementById('voiceMicBtn');
+    const voiceMouthEl = document.getElementById('voiceMouth');
+    const voiceFaceWrapEl = document.getElementById('voiceModeOverlay');
 
     // Configure Marked options for beautiful output rendering
     const renderer = {
@@ -574,6 +798,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     window.addEventListener('DOMContentLoaded', () => {
 
       registerServiceWorker();
+      applyStoredSidebarState();
 
       // Load API Key
       const savedKey = localStorage.getItem('man_openrouter_key');
@@ -700,8 +925,228 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
 
     window.toggleMobileSidebar = function() {
       sidebarEl.classList.toggle('-translate-x-full');
-      sidebarOverlayEl.classList.toggle('hidden');
+      sidebarOverlayEl.classList.toggle('opacity-0');
+      sidebarOverlayEl.classList.toggle('pointer-events-none');
     };
+
+    window.toggleDesktopSidebar = function() {
+      const collapsed = sidebarEl.classList.toggle('lg-collapsed');
+      sidebarToggleDesktopEl.classList.toggle('is-collapsed', collapsed);
+      localStorage.setItem('man_sidebar_collapsed', collapsed ? '1' : '0');
+    };
+
+    function applyStoredSidebarState() {
+      if (localStorage.getItem('man_sidebar_collapsed') === '1') {
+        sidebarEl.classList.add('lg-collapsed');
+        sidebarToggleDesktopEl.classList.add('is-collapsed');
+      }
+    }
+
+    // Keyboard shortcuts: Ctrl/Cmd+B toggles sidebar, Ctrl/Cmd+Shift+O starts a new chat
+    window.addEventListener('keydown', (e) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        if (window.innerWidth >= 1024) {
+          toggleDesktopSidebar();
+        } else {
+          toggleMobileSidebar();
+        }
+      }
+      if (mod && e.shiftKey && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        startNewChat();
+      }
+    });
+
+    // ---- Voice Mode ----
+
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let voiceRecognition = null;
+    let isVoiceListening = false;
+    let voiceModeActive = false;
+    let mouthFlapInterval = null;
+    const MOUTH_CLOSED = 'M 88 122 Q 100 130 112 122';
+    const MOUTH_OPEN_SHAPES = [
+      'M 86 120 Q 100 140 114 120',
+      'M 87 121 Q 100 134 113 121',
+      'M 85 119 Q 100 144 115 119'
+    ];
+    let currentVoiceMood = 'neutral';
+
+    // Extra EMO-pet property: switchable moods that change eyes/mouth/cheeks/tilt
+    window.setVoiceMood = function(mood) {
+      currentVoiceMood = mood;
+      voiceFaceWrapEl.classList.remove('voice-mood-happy', 'voice-mood-curious', 'voice-mood-sleepy');
+      if (mood !== 'neutral') {
+        voiceFaceWrapEl.classList.add(`voice-mood-${mood}`);
+      }
+      showToast(`Mood set to ${mood}`, 'info');
+    };
+
+    window.openVoiceMode = function() {
+      voiceModeActive = true;
+      voiceModeOverlayEl.classList.remove('hidden');
+      voiceModeOverlayEl.classList.add('flex');
+      setVoiceState('idle');
+      if (!SpeechRecognitionAPI) {
+        voiceStatusTextEl.innerText = "Voice input isn't supported in this browser";
+        voiceTranscriptTextEl.innerText = 'You can still listen to replies — typed messages work as usual.';
+      }
+    };
+
+    window.closeVoiceMode = function() {
+      voiceModeActive = false;
+      voiceModeOverlayEl.classList.add('hidden');
+      voiceModeOverlayEl.classList.remove('flex');
+      if (voiceRecognition && isVoiceListening) voiceRecognition.stop();
+      window.speechSynthesis.cancel();
+      stopMouthFlap();
+    };
+
+    function setVoiceState(state) {
+      voiceFaceWrapEl.classList.remove('voice-idle', 'voice-listening', 'voice-thinking', 'voice-speaking');
+      voiceFaceWrapEl.classList.add(`voice-${state}`);
+      voiceMicBtnEl.classList.remove('bg-rose-500', 'hover:bg-rose-600');
+      voiceMicBtnEl.classList.add('bg-red-600', 'hover:bg-red-700');
+      if (state === 'idle') {
+        voiceStatusTextEl.innerText = 'Tap the mic to talk';
+        voiceMouthEl.setAttribute('d', MOUTH_CLOSED);
+      } else if (state === 'listening') {
+        voiceStatusTextEl.innerText = 'Listening...';
+        voiceMicBtnEl.classList.remove('bg-red-600', 'hover:bg-red-700');
+        voiceMicBtnEl.classList.add('bg-rose-500', 'hover:bg-rose-600');
+      } else if (state === 'thinking') {
+        voiceStatusTextEl.innerText = 'Thinking...';
+        voiceMouthEl.setAttribute('d', MOUTH_CLOSED);
+      } else if (state === 'speaking') {
+        voiceStatusTextEl.innerText = 'Speaking...';
+      }
+    }
+
+    window.toggleVoiceListening = function() {
+      if (!SpeechRecognitionAPI) {
+        showToast("This browser doesn't support voice input.", 'error');
+        return;
+      }
+      if (isVoiceListening) {
+        voiceRecognition.stop();
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      stopMouthFlap();
+
+      voiceRecognition = new SpeechRecognitionAPI();
+      voiceRecognition.lang = 'en-US';
+      voiceRecognition.continuous = false;
+      voiceRecognition.interimResults = true;
+
+      voiceRecognition.onstart = () => {
+        isVoiceListening = true;
+        setVoiceState('listening');
+        voiceTranscriptTextEl.innerText = '';
+      };
+
+      voiceRecognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        voiceTranscriptTextEl.innerText = transcript;
+
+        if (event.results[event.results.length - 1].isFinal) {
+          voiceRecognition.stop();
+          submitVoiceTranscript(transcript.trim());
+        }
+      };
+
+      voiceRecognition.onerror = (event) => {
+        isVoiceListening = false;
+        if (event.error !== 'no-speech' && event.error !== 'aborted') {
+          showToast('Voice recognition error: ' + event.error, 'error');
+        }
+        setVoiceState('idle');
+      };
+
+      voiceRecognition.onend = () => {
+        isVoiceListening = false;
+        if (voiceFaceWrapEl.classList.contains('voice-listening')) setVoiceState('idle');
+      };
+
+      voiceRecognition.start();
+    };
+
+    function submitVoiceTranscript(transcript) {
+      if (!transcript) {
+        setVoiceState('idle');
+        return;
+      }
+      if (!apiKeyInput.value.trim()) {
+        setVoiceState('idle');
+        showToast('OpenRouter API key is required!', 'error');
+        return;
+      }
+      setVoiceState('thinking');
+      userInputEl.value = transcript;
+      sendPrompt();
+    }
+
+    // Strip markdown syntax so speech synthesis doesn't read symbols aloud
+    function stripMarkdownForSpeech(text) {
+      return text
+        .replace(/```[\s\S]*?```/g, ' Code block omitted. ')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, ' image ')
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/[*_#>~-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function speakAssistantReply(rawText) {
+      if (!voiceModeActive || !('speechSynthesis' in window)) return;
+      const clean = stripMarkdownForSpeech(rawText);
+      if (!clean) { setVoiceState('idle'); return; }
+
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => {
+        setVoiceState('speaking');
+        startMouthFlap();
+      };
+      utterance.onend = () => {
+        stopMouthFlap();
+        setVoiceState('idle');
+      };
+      utterance.onerror = () => {
+        stopMouthFlap();
+        setVoiceState('idle');
+      };
+
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function startMouthFlap() {
+      stopMouthFlap();
+      mouthFlapInterval = setInterval(() => {
+        const shape = Math.random() > 0.3
+          ? MOUTH_OPEN_SHAPES[Math.floor(Math.random() * MOUTH_OPEN_SHAPES.length)]
+          : MOUTH_CLOSED;
+        voiceMouthEl.setAttribute('d', shape);
+      }, 110);
+    }
+
+    function stopMouthFlap() {
+      if (mouthFlapInterval) {
+        clearInterval(mouthFlapInterval);
+        mouthFlapInterval = null;
+      }
+      voiceMouthEl.setAttribute('d', MOUTH_CLOSED);
+    }
 
     // ---- Multi-session Chat History ----
 
@@ -767,10 +1212,12 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       }
       emptyHistoryMsgEl.style.display = 'none';
 
-      sessions.forEach(session => {
+      sessions.forEach((session, idx) => {
         const item = document.createElement('div');
         const isActive = session.id === currentSessionId;
         item.className = `group flex items-center gap-1.5 rounded-lg px-2.5 py-2 cursor-pointer transition-all ${isActive ? 'bg-amber-500/10 border border-amber-500/40' : 'hover:bg-slate-100 border border-transparent'}`;
+        item.style.animation = `fadeIn 0.25s ease-out backwards`;
+        item.style.animationDelay = `${Math.min(idx * 0.04, 0.3)}s`;
         item.onclick = () => switchToSession(session.id);
 
         const label = document.createElement('span');
@@ -826,6 +1273,11 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       if (messages.length > 0) {
         zeroStateEl.style.display = 'none';
         messages.forEach((msg) => renderMessageBubble(msg.role, msg.content, msg.reasoning || ''));
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content) {
+          const bubbles = chatHistoryEl.querySelectorAll('.chat-bubble-container');
+          renderQuickReplies(bubbles[bubbles.length - 1]);
+        }
         setTimeout(scrollToBottom, 100);
       } else {
         zeroStateEl.style.display = 'flex';
@@ -914,6 +1366,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       }
     };
 
+
     window.applySuggestedPrompt = function(promptText) {
       userInputEl.value = promptText;
       autoGrowTextarea();
@@ -990,6 +1443,9 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
 
       // Hide zero-state
       zeroStateEl.style.display = 'none';
+
+      // Remove any quick-reply chips left over from the previous assistant message
+      document.querySelectorAll('.quick-reply-row').forEach(el => el.remove());
 
       // Add User Message
       messages.push({ role: 'user', content: userText });
@@ -1154,6 +1610,8 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           reasoning: rawReasoning 
         });
         saveCurrentSession();
+        if (voiceModeActive) speakAssistantReply(rawContent);
+        if (rawContent) renderQuickReplies(aiBubble);
 
       } catch (err) {
         if (err.name === 'AbortError') {
@@ -1181,6 +1639,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         abortController = null;
         updateInputControlsState();
         scrollToBottom();
+        if (voiceModeActive && voiceFaceWrapEl.classList.contains('voice-thinking')) setVoiceState('idle');
       }
     };
 
@@ -1270,12 +1729,51 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       chatHistoryEl.appendChild(container);
     }
 
+    // Quick Reply chips — one-tap follow-up suggestions shown under a finished assistant reply
+    const QUICK_REPLY_SUGGESTIONS = ['Tell me more', 'Explain simply', 'Give an example', 'Summarize that', 'What\'s next?'];
+
+    function renderQuickReplies(bubbleContainer) {
+      // Only one active set of chips at a time
+      document.querySelectorAll('.quick-reply-row').forEach(el => el.remove());
+      if (!bubbleContainer) return;
+
+      const contentWrapper = bubbleContainer.querySelector('.markdown-content');
+      if (!contentWrapper || !contentWrapper.parentElement) return;
+
+      const row = document.createElement('div');
+      row.className = 'quick-reply-row flex flex-wrap gap-2 pt-1 animate-[fadeIn_0.3s_ease-out]';
+
+      QUICK_REPLY_SUGGESTIONS.forEach(text => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quick-reply-btn px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-medium font-sans transition-all active:scale-95 shadow-sm';
+        btn.textContent = text;
+        btn.onclick = () => {
+          if (isGenerating) return;
+          document.querySelectorAll('.quick-reply-row').forEach(el => el.remove());
+          userInputEl.value = text;
+          sendPrompt();
+        };
+        row.appendChild(btn);
+      });
+
+      contentWrapper.parentElement.appendChild(row);
+      scrollToBottom();
+    }
+
     function scrollToBottom() {
       chatHistoryEl.scrollTo({
         top: chatHistoryEl.scrollHeight,
         behavior: 'smooth'
       });
     }
+
+    // Show a "scroll to latest" FAB whenever the user has scrolled away from the bottom
+    chatHistoryEl.addEventListener('scroll', () => {
+      const distanceFromBottom = chatHistoryEl.scrollHeight - chatHistoryEl.scrollTop - chatHistoryEl.clientHeight;
+      const shouldShow = distanceFromBottom > 200;
+      scrollToBottomBtnEl.classList.toggle('is-visible', shouldShow);
+    });
 
     function showToast(message, type = 'success') {
       const container = document.getElementById('toastContainer');
